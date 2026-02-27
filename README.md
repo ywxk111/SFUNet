@@ -65,3 +65,9 @@ python evaluate/evaluate_gaussian_gray_denoising.py --sigma 25
 python evaluate/test_gaussian_gray_denoising.py --sigma 50
 python evaluate/evaluate_gaussian_gray_denoising.py --sigma 50
 
+
+
+
+##  Acknowledgements
+This work is released under the Apache 2.0 license. The codes are based on Restormer and BasicSR. Please also follow their licenses. Thanks for their awesome works.
+
