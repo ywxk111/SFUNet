@@ -27,19 +27,19 @@ You can install dependencies via:pip install -r requirements.txt
 
   ## Train on GaussionColor image denoising
 
-python -m torch.distributed.launch --nproc_per_node=4 --master_port=2418 basicsr/train.py -opt options/GaussianColorDenoising_X_FormerSigma15.yml --launcher pytorch
-python -m torch.distributed.launch --nproc_per_node=4 --master_port=2416 basicsr/train.py -opt options/GaussianColorDenoising_X_FormerSigma25.yml --launcher pytorch
-python -m torch.distributed.launch --nproc_per_node=4 --master_port=2414 basicsr/train.py -opt options/GaussianColorDenoising_X_FormerSigma50.yml --launcher pytorch
+python -m torch.distributed.launch --nproc_per_node=4 --master_port=2418 basicsr/train.py -opt options/GaussianColorDenoising_SFUNet_Sigma15.yml --launcher pytorch
+python -m torch.distributed.launch --nproc_per_node=4 --master_port=2416 basicsr/train.py -opt options/GaussianColorDenoising_SFUNet_Sigma25.yml --launcher pytorch
+python -m torch.distributed.launch --nproc_per_node=4 --master_port=2414 basicsr/train.py -opt options/GaussianColorDenoising_SFUNet_Sigma50.yml --launcher pytorch
 
   ## Train on GaussionGrayscale image denoising
 
-python -m torch.distributed.launch --nproc_per_node=4 --master_port=2418 basicsr/train.py -opt options/GaussianGrayscaleDenoising_X_FormerSigma15.yml --launcher pytorch
-python -m torch.distributed.launch --nproc_per_node=4 --master_port=2416 basicsr/train.py -opt options/GaussianGrayscaleDenoising_X_FormerSigma25.yml --launcher pytorch
-python -m torch.distributed.launch --nproc_per_node=4 --master_port=2414 basicsr/train.py -opt options/GaussianGrayscaleDenoising_X_FormerSigma50.yml --launcher pytorch
+python -m torch.distributed.launch --nproc_per_node=4 --master_port=2418 basicsr/train.py -opt options/GaussianGrayscaleDenoising_SFUNet_Sigma15.yml --launcher pytorch
+python -m torch.distributed.launch --nproc_per_node=4 --master_port=2416 basicsr/train.py -opt options/GaussianGrayscaleDenoising_SFUNet_Sigma25.yml --launcher pytorch
+python -m torch.distributed.launch --nproc_per_node=4 --master_port=2414 basicsr/train.py -opt options/GaussianGrayscaleDenoising_SFUNet_Sigma50.yml --launcher pytorch
 
 
   ## Train on Real Image Denoising
-python -m torch.distributed.launch --nproc_per_node=4 --master_port=6414 basicsr/train.py -opt options/RealDenoising_X_Former.yml --launcher pytorch
+python -m torch.distributed.launch --nproc_per_node=4 --master_port=6414 basicsr/train.py -opt options/RealDenoising_SFUNet.yml --launcher pytorch
 
 
 ## Test
