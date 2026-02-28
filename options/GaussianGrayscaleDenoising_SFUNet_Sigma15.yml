@@ -1,0 +1,146 @@
+# general settings
+name: GaussianGrayDenoising_SFUNet_Sigma15
+model_type: ImageCleanModel
+scale: 1
+num_gpu: 4  # set num_gpu: 0 for cpu mode
+manual_seed: 100
+
+# dataset and data loader settings
+datasets:
+  train:
+    name: TrainSet
+    type: Dataset_GaussianDenoising
+    sigma_type: constant
+    sigma_range: 15
+    in_ch: 1    
+    dataroot_gt: datasets/DFWB/train/DFWB
+    dataroot_lq: none
+    geometric_augs: true
+
+    filename_tmpl: '{}'
+    io_backend:
+      type: disk
+
+    # data loader
+    use_shuffle: true
+    num_worker_per_gpu: 8  
+    batch_size_per_gpu: 6  
+
+   
+    mini_batch_sizes: [6]   
+    iters: [400000]         
+    gt_size: 128             
+    gt_sizes: [128]          
+
+    dataset_enlarge_ratio: 100
+    prefetch_mode: cuda  
+    pin_memory: true
+
+  val:
+    name: ValSet
+    type: Dataset_GaussianDenoising
+    sigma_test: 15
+    in_ch: 1    ## Grayscale image
+    dataroot_gt: datasets/DFWB/test/McMaster
+    dataroot_lq: none
+    io_backend:
+      type: disk
+
+# network structures
+network_g:
+  type: SFUNet
+  inp_channels: 1
+  out_channels: 1
+  img_size: 128
+  dim: 48
+  num_blocks: [2, 4, 4]
+  spatial_num_blocks: [2,4,4,6]
+  num_refinement_blocks: 4
+  heads: [1, 2, 4, 8]
+  window_size: [16,16,16,16]
+  drop_path_rate: 0.1
+  ffn_expansion_factor: 2.66
+  bias: False
+  LayerNorm_type: BiasFree
+  dual_pixel_task: False
+  wavelet_type: db4  
+  use_memory_efficient: true
+  use_lightweight_gate: true 
+  use_adaptive_wavelet: false
+  wavelet_types: ['db4']
+
+# path
+path:
+  pretrain_network_g: ~
+  strict_load_g: true
+  resume_state: 
+
+# training settings
+train:
+  total_iter: 400000  
+  warmup_iter: -1 
+  use_grad_clip: true
+  
+  
+  use_amp: true  
+
+  
+  scheduler:
+    type: MultiStepRestartLR
+    milestones: [160000, 240000, 320000, 360000]  
+    gamma: 0.7                      
+    restarts: [0]
+    restart_weights: [1]
+  
+  mixing_augs:
+    mixup: true
+    mixup_beta: 1.2
+    use_identity: true
+
+  optim_g:
+    type: AdamW
+    lr: !!float 3e-4
+    weight_decay: !!float 1e-4
+    betas: [0.9, 0.999]
+  
+  # losses
+  pixel_opt:
+    type: L1Loss
+    loss_weight: 1
+    reduction: mean
+
+# validation settings
+val:
+  window_size: 128  
+  val_freq: !!float 8e3  
+  save_img: false
+  rgb2bgr: true
+  use_image: false
+  max_minibatch: 4  
+  final_validation: true
+
+  metrics:
+    psnr: # metric name, can be arbitrary
+      type: calculate_psnr
+      crop_border: 0
+      test_y_channel: false
+    ssim:
+      type: calculate_ssim
+      crop_border: 0
+      test_y_channel: false
+  save_best_model: true
+  best_model_metric: psnr
+
+# logging settings
+logger:
+  print_freq: 2000  
+  save_checkpoint_freq: !!float 8e3  
+  use_tb_logger: false  
+  wandb:
+    project: ~
+    resume_id: ~
+
+# dist training settings
+dist_params:
+  backend: nccl
+  port: 29500

@@ -1,0 +1,137 @@
+# general settings
+name: RealDenoising_SFUNet
+model_type: ImageCleanModel
+scale: 1
+num_gpu: 4
+manual_seed: 100
+
+# dataset and data loader settings
+datasets:
+  train:
+    name: TrainSet
+    type: Dataset_PairedImage
+    dataroot_gt: datasets/train/SIDD/target_crops
+    dataroot_lq: datasets/train/SIDD/input_crops
+    geometric_augs: true
+
+    filename_tmpl: '{}'
+    io_backend:
+      type: disk
+
+    use_shuffle: true
+    num_worker_per_gpu: 8  
+    batch_size_per_gpu: 8  
+
+    
+    mini_batch_sizes: [8]   
+    iters: [300000]          
+    gt_size: 128             
+    gt_sizes: [128]         
+
+    dataset_enlarge_ratio: 100
+    prefetch_mode: cuda  
+    pin_memory: true
+
+  val:
+    name: ValSet
+    type: Dataset_PairedImage
+    dataroot_gt: datasets/val/SIDD/target_crops
+    dataroot_lq: datasets/val/SIDD/input_crops
+    io_backend:
+      type: disk
+
+# network structures
+network_g:
+  type: SFUNet
+  inp_channels: 3
+  out_channels: 3
+  img_size: 128
+  dim: 48
+  num_blocks: [2, 4, 4]
+  spatial_num_blocks: [2,4,4,6]
+  num_refinement_blocks: 4
+  heads: [1, 2, 4, 8]
+  window_size: [16,16,16,16]
+  drop_path_rate: 0.1
+  ffn_expansion_factor: 2.66
+  bias: False
+  LayerNorm_type: WithBias
+  dual_pixel_task: False
+  wavelet_type: db4  
+  use_memory_efficient: true
+  use_lightweight_gate: true  
+
+# path
+path:
+  pretrain_network_g: ~
+  strict_load_g: true
+  resume_state: ~
+
+# training settings
+train:
+  total_iter: 300000
+  warmup_iter: -1
+  use_grad_clip: true
+  
+  
+  use_amp: false  
+  
+  
+  scheduler:
+    type: MultiStepRestartLR
+    milestones: [120000, 180000, 240000, 280000]  
+    gamma: 0.7                      
+    restarts: [0]
+    restart_weights: [1]
+  
+  mixing_augs:
+    mixup: true
+    mixup_beta: 1.2
+    use_identity: true
+
+  optim_g:
+    type: AdamW
+    lr: !!float 3e-4
+    weight_decay: !!float 1e-4
+    betas: [0.9, 0.999]
+  
+  pixel_opt:
+    type: L1Loss
+    loss_weight: 1
+    reduction: mean
+
+# validation settings
+val:
+  window_size: 8
+  val_freq: !!float 5e3  
+  save_img: false
+  rgb2bgr: true
+  use_image: false
+  max_minibatch: 8  
+  final_validation: true
+
+  metrics:
+    psnr: # metric name, can be arbitrary
+      type: calculate_psnr
+      crop_border: 0
+      test_y_channel: false
+    ssim:
+      type: calculate_ssim
+      crop_border: 0
+      test_y_channel: false
+  save_best_model: true
+  best_model_metric: psnr
+
+# logging settings
+logger:
+  print_freq: 500   
+  save_checkpoint_freq: !!float 2e4  
+  use_tb_logger: false
+  wandb:
+    project: ~
+    resume_id: ~
+
+# dist training settings
+dist_params:
+  backend: nccl
+  port: 29500
